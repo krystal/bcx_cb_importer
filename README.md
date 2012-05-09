@@ -27,7 +27,7 @@ appropriate constants.
 
 Execute bcx_importer.rb:
 
-`ruby -rubygems bcx_importer.rb`
+    ruby -rubygems bcx_importer.rb
 
 ## Improvements
 
