@@ -10,8 +10,8 @@ with a Basecamp Next account.
 
 Tested on Ruby 1.9.2p290. Requires JSON and Hpricot gems. To install run:
 
-`gem install json`
-`gem install hpricot`
+    gem install json
+    gem install hpricot
 
 ## Usage
 
