@@ -4,6 +4,7 @@
 
 require 'json'
 require 'net/http'
+require './downmark_it'
 
 BASECAMP_ACCOUNT  = '' ## Basecamp account number
 BASECAMP_USERNAME = '' ## Basecamp username
@@ -21,6 +22,12 @@ def run_import
 	## Build a user mapping BASECAMP_ID => CODEBASE_ID
 	codebase_users = codebase_request('/users')
 	basecamp_users = basecamp_request('/people.json')
+
+	unless codebase_users && basecamp_users
+		puts "Could not fetch user lists. Are your credentials on the level?"
+		exit
+	end
+
 	user_map = basecamp_users.inject(Hash.new) do |memo, basecamp_user| 
 		# Find a user in Codebase with the same email address
 		codebase_user = codebase_users.select {|user| user["user"]["email_address"] == basecamp_user["email_address"] }.first
@@ -44,7 +51,7 @@ def run_import
 			basecamp_topicables.each do |basecamp_topicable|
 				basecamp_discussion = basecamp_request("/projects/#{basecamp_project["id"]}/messages/#{basecamp_topicable["topicable"]["id"]}.json")
 
-				codebase_payload = {:discussion => {:subject => basecamp_discussion["subject"], :content => basecamp_discussion["content"],
+				codebase_payload = {:discussion => {:subject => basecamp_discussion["subject"], :content => DownmarkIt.to_markdown(basecamp_discussion["content"]),
 					:created_at => basecamp_discussion["created_at"], :updated_at => basecamp_discussion["updated_at"] }}
 				if codebase_user_id = user_map[basecamp_discussion["creator"]["id"]]
 					codebase_payload[:discussion][:user_id] = codebase_user_id
@@ -57,7 +64,7 @@ def run_import
 
 				basecamp_discussion["comments"].each do |basecamp_update|
 
-					codebase_payload = {:discussion_post => {:content => basecamp_update["content"], 
+					codebase_payload = {:discussion_post => {:content => DownmarkIt.to_markdown(basecamp_update["content"]), 
 						:created_at => basecamp_update["created_at"], :updated_at => basecamp_update[:updated_at]}}
 					if codebase_user_id = user_map[basecamp_update["creator"]["id"]] 
 						codebase_payload[:discussion_post][:user_id] = codebase_user_id
