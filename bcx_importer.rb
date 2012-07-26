@@ -95,7 +95,7 @@ def codebase_request(path, type = :get, payload = nil)
 	req['Content-Type'] = 'application/json'
 	req['Accept'] = 'application/json'
 
-	if payload.respond_to?(:to_json)
+	if payload && payload.respond_to?(:to_json)
 		req.body = payload.to_json
 		puts req.body
 	end
